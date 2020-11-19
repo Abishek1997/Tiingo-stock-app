@@ -7,4 +7,6 @@
     <string name="favorites">FAVORITES</string>
     <string name="footer_text">Powered by tiingo</string>
     <string name="loading">Loading</string>
+    <string name="star_outline_for_denoting_un_bookmarked_stock">Star outline for denoting (un) bookmarked stock</string>
+    <string name="stocks">Stocks</string>
 </resources>
