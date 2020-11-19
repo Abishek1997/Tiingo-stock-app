@@ -2,6 +2,7 @@ package com.example.tiingostock.network.retrofit;
 
 
 import com.example.tiingostock.network.pojos.AutocompleteResponseItem;
+import com.example.tiingostock.network.pojos.CompanyDetailsResponse;
 
 import java.util.List;
 
@@ -28,6 +29,9 @@ public class TiingoAPIRetrofitService {
     public interface RetrofitInterface {
         @GET("autocomplete")
         Call<List<AutocompleteResponseItem>> getAutoCompleteAsync(@Query("ticker") String ticker);
+
+        @GET("getCompanyDetails")
+        Call<CompanyDetailsResponse> getCompanyDetailsAsync(@Query("ticker") String ticker);
     }
 
     public static TiingoAPIRetrofitService getInstance(){

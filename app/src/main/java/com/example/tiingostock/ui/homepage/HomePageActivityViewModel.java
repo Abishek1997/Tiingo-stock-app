@@ -20,5 +20,4 @@ public class HomePageActivityViewModel extends ViewModel {
     public LiveData<List<AutocompleteResponseItem>> getAutocompleteData(String input){
         return this.stockRepository.getAutocompleteData(input);
     }
-
 }

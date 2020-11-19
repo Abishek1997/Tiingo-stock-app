@@ -26,8 +26,13 @@ import com.example.tiingostock.network.connectivity.StockDataSourceImpl;
 import com.example.tiingostock.network.pojos.AutocompleteResponseItem;
 import com.example.tiingostock.network.retrofit.TiingoAPIRetrofitService;
 import com.example.tiingostock.repository.StockRepositoryImpl;
+import com.example.tiingostock.ui.stockdetails.StockDetailsActivity;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class HomePageActivity extends AppCompatActivity{
 
@@ -51,16 +56,23 @@ public class HomePageActivity extends AppCompatActivity{
     }
 
     public void bindUI(){
+
         setTypeFaceForTextView();
         textFooter.setOnClickListener(v -> {
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.tiingo.com/"));
             startActivity(browserIntent);
         });
+        setDate();
     }
 
-    public void setTypeFaceForTextView(){
+    public void setDate(){
         TextView dateTextView = (TextView)findViewById(R.id.date_text_view);
         dateTextView.setTypeface(null, Typeface.BOLD);
+        Calendar cal= Calendar.getInstance();
+        String currentDate = new SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault()).format(new Date());
+        dateTextView.setText(currentDate);
+    }
+    public void setTypeFaceForTextView(){
         TextView titlePortfolio = (TextView)findViewById(R.id.title_portfolio);
         titlePortfolio.setTypeface(null, Typeface.BOLD);
         TextView valueNetworth = (TextView)findViewById(R.id.value_networth);
@@ -91,9 +103,13 @@ public class HomePageActivity extends AppCompatActivity{
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
+
                 searchView.setQuery("", false);
                 searchView.clearFocus();
                 searchItem.collapseActionView();
+                Intent intent = new Intent(HomePageActivity.this, StockDetailsActivity.class);
+                intent.putExtra("ticker", query.split(" ")[0]);
+                startActivity(intent);
                 return true;
             }
 
@@ -105,7 +121,7 @@ public class HomePageActivity extends AppCompatActivity{
                             SearchManager.SUGGEST_COLUMN_TEXT_1
                     };
                     if (!newText.isEmpty()){
-                         Observer<List<AutocompleteResponseItem>> nameObserver = (Observer<List<AutocompleteResponseItem>>) data -> {
+                         Observer<List<AutocompleteResponseItem>> namedObserver = (Observer<List<AutocompleteResponseItem>>) data -> {
                             MatrixCursor cursor = new MatrixCursor(sAutocompleteColNames);
                             for (int i = 0; i < Math.min(5, data.size()); i++){
                                 String term = data.get(i).getTicker() + " - " + data.get(i).getName();
@@ -116,7 +132,7 @@ public class HomePageActivity extends AppCompatActivity{
                         };
 
                         autocompleteDataObserver = viewModel.getAutocompleteData(newText);
-                        autocompleteDataObserver.observe(HomePageActivity.this, nameObserver);
+                        autocompleteDataObserver.observe(HomePageActivity.this, namedObserver);
 
                     } else {
                         searchView.getSuggestionsAdapter().changeCursor(null);
