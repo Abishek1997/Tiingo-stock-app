@@ -2,4 +2,8 @@
     <string name="app_name">TiingoStock</string>
     <string name="search">Search</string>
     <string name="search_hint">Enter a stock name or ticker to search</string>
+    <string name="portfolio">PORTFOLIO</string>
+    <string name="net_worth">Net Worth</string>
+    <string name="favorites">FAVORITES</string>
+    <string name="footer_text">Powered by tiingo</string>
 </resources>

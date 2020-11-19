@@ -16,7 +16,7 @@
 <!--    </style>-->
 
     <style name="ToolbarTheme">
-        <item name="android:background">@color/toolbar_background</item>
+        <item name="android:background">@color/activity_background_color</item>
         <item name="android:textColorPrimary">@color/toolbar_title_color</item>
         <item name="android:textColorSecondary">@color/toolbar_subtitle_color</item>
     </style>
@@ -27,7 +27,7 @@
     </style>
 
     <style name="ActivityTheme" parent="Theme.AppCompat.DayNight">
-        <item name="backgroundActivityColor">@color/toolbar_background</item>
+        <item name="backgroundActivityColor">@color/activity_background_color</item>
     </style>
 
 </resources>
