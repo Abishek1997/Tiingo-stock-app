@@ -2,11 +2,26 @@
     <string name="app_name">TiingoStock</string>
     <string name="search">Search</string>
     <string name="search_hint">Enter a stock name or ticker to search</string>
-    <string name="portfolio">PORTFOLIO</string>
+    <string name="portfolio">Portfolio</string>
     <string name="net_worth">Net Worth</string>
     <string name="favorites">FAVORITES</string>
     <string name="footer_text">Powered by tiingo</string>
     <string name="loading">Loading</string>
     <string name="star_outline_for_denoting_un_bookmarked_stock">Star outline for denoting (un) bookmarked stock</string>
     <string name="stocks">Stocks</string>
+    <string name="shares_owned">Shares owned: </string>
+    <string name="market_value">Market Value: </string>
+    <string name="trade">Trade</string>
+    <string name="stats">Stats</string>
+    <string name="current_price">Current Price:</string>
+    <string name="low">Low: </string>
+    <string name="bid_price">Bid Price: </string>
+    <string name="open_price">Open Price:</string>
+    <string name="mid">Mid:</string>
+    <string name="high">High:</string>
+    <string name="volume">Volume:</string>
+    <string name="about">About</string>
+    <string name="show_more">Show more...</string>
+    <string name="show_less">Show less</string>
+    <string name="image_from_a_news_data_source">Image from a news data source</string>
 </resources>

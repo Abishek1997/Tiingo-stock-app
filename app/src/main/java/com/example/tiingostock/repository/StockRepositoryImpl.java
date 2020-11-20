@@ -7,6 +7,8 @@ import androidx.lifecycle.LiveData;
 import com.example.tiingostock.network.connectivity.StockDataSourceImpl;
 import com.example.tiingostock.network.pojos.AutocompleteResponseItem;
 import com.example.tiingostock.network.pojos.CompanyDetailsResponse;
+import com.example.tiingostock.network.pojos.CompanyNewsResponse;
+import com.example.tiingostock.network.pojos.CompanyStockDetailsResponse;
 
 import java.util.List;
 
@@ -30,5 +32,17 @@ public class StockRepositoryImpl implements StockRepository {
     public LiveData<CompanyDetailsResponse> getCompanyDetails(String ticker) {
         this.stockDataSource.fetchCompanyDetails(ticker);
         return this.stockDataSource.getCompanyDetailsData();
+    }
+
+    @Override
+    public LiveData<CompanyStockDetailsResponse> getCompanyStockDetails(String ticker) {
+        this.stockDataSource.fetchCompanyStockDetails(ticker);
+        return this.stockDataSource.getCompanyStockDetailsData();
+    }
+
+    @Override
+    public LiveData<List<CompanyNewsResponse>> getCompanyNewsDetails(String ticker) {
+        this.stockDataSource.fetchCompanyNewsDetails(ticker);
+        return this.stockDataSource.getCompanyNewsDetailsData();
     }
 }

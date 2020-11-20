@@ -29,7 +29,6 @@ import com.example.tiingostock.repository.StockRepositoryImpl;
 import com.example.tiingostock.ui.stockdetails.StockDetailsActivity;
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -47,9 +46,9 @@ public class HomePageActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_page);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        textFooter = (TextView)findViewById(R.id.text_footer);
+        textFooter = findViewById(R.id.text_footer);
         viewModel = new ViewModelProvider(this, viewModelFactory)
                 .get(HomePageActivityViewModel.class);
         bindUI();
@@ -66,18 +65,17 @@ public class HomePageActivity extends AppCompatActivity{
     }
 
     public void setDate(){
-        TextView dateTextView = (TextView)findViewById(R.id.date_text_view);
+        TextView dateTextView = findViewById(R.id.date_text_view);
         dateTextView.setTypeface(null, Typeface.BOLD);
-        Calendar cal= Calendar.getInstance();
         String currentDate = new SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault()).format(new Date());
         dateTextView.setText(currentDate);
     }
     public void setTypeFaceForTextView(){
-        TextView titlePortfolio = (TextView)findViewById(R.id.title_portfolio);
+        TextView titlePortfolio = findViewById(R.id.title_portfolio);
         titlePortfolio.setTypeface(null, Typeface.BOLD);
-        TextView valueNetworth = (TextView)findViewById(R.id.value_networth);
+        TextView valueNetworth = findViewById(R.id.value_networth);
         valueNetworth.setTypeface(null, Typeface.BOLD);
-        TextView titleFavorites = (TextView)findViewById(R.id.title_favorites);
+        TextView titleFavorites = findViewById(R.id.title_favorites);
         titleFavorites.setTypeface(null, Typeface.BOLD);
         textFooter.setTypeface(null, Typeface.ITALIC);
     }
@@ -86,7 +84,7 @@ public class HomePageActivity extends AppCompatActivity{
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.search_menu_item, menu);
         SearchManager searchManager = (SearchManager)getSystemService(Context.SEARCH_SERVICE);
-        MenuItem searchItem = (MenuItem) menu.findItem(R.id.search);
+        MenuItem searchItem = menu.findItem(R.id.search);
         SearchView searchView = (SearchView) searchItem.getActionView();
 
         assert searchManager != null;
@@ -121,7 +119,7 @@ public class HomePageActivity extends AppCompatActivity{
                             SearchManager.SUGGEST_COLUMN_TEXT_1
                     };
                     if (!newText.isEmpty()){
-                         Observer<List<AutocompleteResponseItem>> namedObserver = (Observer<List<AutocompleteResponseItem>>) data -> {
+                         Observer<List<AutocompleteResponseItem>> namedObserver = data -> {
                             MatrixCursor cursor = new MatrixCursor(sAutocompleteColNames);
                             for (int i = 0; i < Math.min(5, data.size()); i++){
                                 String term = data.get(i).getTicker() + " - " + data.get(i).getName();

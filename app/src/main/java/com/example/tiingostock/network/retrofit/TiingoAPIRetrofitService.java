@@ -3,6 +3,8 @@ package com.example.tiingostock.network.retrofit;
 
 import com.example.tiingostock.network.pojos.AutocompleteResponseItem;
 import com.example.tiingostock.network.pojos.CompanyDetailsResponse;
+import com.example.tiingostock.network.pojos.CompanyNewsResponse;
+import com.example.tiingostock.network.pojos.CompanyStockDetailsResponse;
 
 import java.util.List;
 
@@ -32,6 +34,12 @@ public class TiingoAPIRetrofitService {
 
         @GET("getCompanyDetails")
         Call<CompanyDetailsResponse> getCompanyDetailsAsync(@Query("ticker") String ticker);
+
+        @GET("getCompanyStockPrices")
+        Call<CompanyStockDetailsResponse> getCompanyStockDetailsAsync(@Query("ticker") String ticker);
+
+        @GET("getCompanyNews")
+        Call<List<CompanyNewsResponse>> getCompanyNewsDetailsAsync( @Query("ticker") String ticker);
     }
 
     public static TiingoAPIRetrofitService getInstance(){
