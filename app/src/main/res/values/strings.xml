@@ -24,4 +24,8 @@
     <string name="show_more">Show more...</string>
     <string name="show_less">Show less</string>
     <string name="image_from_a_news_data_source">Image from a news data source</string>
+    <string name="news_image">News image</string>
+    <string name="news">News</string>
+    <string name="chrome_icon">chrome_icon</string>
+    <string name="twitter_icon">twitter icon</string>
 </resources>

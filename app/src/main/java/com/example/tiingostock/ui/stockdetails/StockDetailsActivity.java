@@ -1,7 +1,9 @@
 package com.example.tiingostock.ui.stockdetails;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -9,10 +11,12 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.Group;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
@@ -23,9 +27,14 @@ import com.example.tiingostock.network.pojos.CompanyNewsResponse;
 import com.example.tiingostock.network.pojos.CompanyStockDetailsResponse;
 import com.example.tiingostock.network.retrofit.TiingoAPIRetrofitService;
 import com.example.tiingostock.repository.StockRepositoryImpl;
+import com.example.tiingostock.ui.helpers.DialogBox;
+import com.example.tiingostock.ui.helpers.NewsRecyclerViewItem;
+import com.xwray.groupie.GroupAdapter;
+import com.xwray.groupie.Section;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("MalformedFormatString")
 public class StockDetailsActivity extends AppCompatActivity {
@@ -103,8 +112,10 @@ public class StockDetailsActivity extends AppCompatActivity {
                 data.get(0).getUrlToImage(),
                 data.get(0).getSource().getName(),
                 data.get(0).getPublishedAt(),
-                data.get(0).getTitle()
+                data.get(0).getTitle(),
+                data.get(0).getUrl()
             );
+            setCompanyNewsRecyclerUI(constructNewsRecyclerViewItems(data.subList(1, data.size())));
         };
 
         companyDetailsObserver.observe(this, companyObserverCallback);
@@ -127,6 +138,8 @@ public class StockDetailsActivity extends AppCompatActivity {
         @SuppressLint("DefaultLocale") String stockValue = String.format("%.2f", price);
         textStockValue.setText(stockValue);
         textStockValue.setTypeface(null, Typeface.BOLD);
+
+        //TODO: Set gain or loss correspondingly
     }
 
     public void setCompanyPortfolioUI(){
@@ -167,13 +180,14 @@ public class StockDetailsActivity extends AppCompatActivity {
         });
     }
 
-    public void setCompanyNewsUI(String imageURL, String source, String dateTime, String title){
+    public void setCompanyNewsUI(String imageURL, String source, String dateTime, String title, String url){
         //TODO: Change time of news source to appropriate format
 
         ImageView firstNewsImage = findViewById(R.id.image_first_news_card);
-        TextView textNewsSource = findViewById(R.id.text_news_source_value);
-        TextView textNewsTime = findViewById(R.id.text_timeline_value);
-        TextView textNewsTitle = findViewById(R.id.text_news_title);
+        TextView textNewsSource = findViewById(R.id.text_rv_news_source_value);
+        TextView textNewsTime = findViewById(R.id.text_rv_timeline_value);
+        TextView textNewsTitle = findViewById(R.id.text_rv_news_title);
+        CardView cardStockNews = findViewById(R.id.card_stock_news);
 
         RequestOptions requestOptions = new RequestOptions()
                 .centerCrop()
@@ -183,5 +197,32 @@ public class StockDetailsActivity extends AppCompatActivity {
         textNewsSource.setText(source);
         textNewsTime.setText(dateTime);
         textNewsTitle.setText(title);
+        cardStockNews.setOnClickListener(v -> {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            startActivity(browserIntent);
+        });
+        cardStockNews.setOnLongClickListener(v -> {
+            DialogBox dialogBox = new DialogBox();
+            dialogBox.showDialog(StockDetailsActivity.this, imageURL, title, url);
+            return true;
+        });
+    }
+
+    public List<NewsRecyclerViewItem> constructNewsRecyclerViewItems(List<CompanyNewsResponse> newsList){
+        return newsList
+                .stream()
+                .map(item -> new NewsRecyclerViewItem(item.getUrlToImage(), item.getSource().getName(), item.getPublishedAt(), item.getTitle(), StockDetailsActivity.this, item.getUrl()))
+                .collect(Collectors.toList());
+    }
+
+    public void setCompanyNewsRecyclerUI(List<NewsRecyclerViewItem> items){
+        GroupAdapter groupieAdapter = new GroupAdapter();
+        RecyclerView recyclerViewNews = findViewById(R.id.recyclerView_news);
+        recyclerViewNews.setAdapter(groupieAdapter);
+
+        Section section = new Section();
+        section.addAll(items);
+        groupieAdapter.add(section);
+
     }
 }
