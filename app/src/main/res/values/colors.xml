@@ -16,4 +16,5 @@
     <color name="activity_background_color">#F4F2F4</color>
     <color name="color_negative_change">#ad0314</color>
     <color name="color_positive_change">#088741</color>
+    <color name="color_swipe_left">#b60000</color>
 </resources>

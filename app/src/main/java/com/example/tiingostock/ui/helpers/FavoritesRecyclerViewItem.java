@@ -3,7 +3,6 @@ package com.example.tiingostock.ui.helpers;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -48,13 +47,10 @@ public class FavoritesRecyclerViewItem extends Item {
             imageCompanyChangeTrend.setImageResource(R.drawable.ic_twotone_trending_up_24);
         }
 
-        imageRight.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(context, StockDetailsActivity.class);
-                intent.putExtra("ticker", storedFavorites.getCompanyTicker());
-                context.startActivity(intent);
-            }
+        imageRight.setOnClickListener(v -> {
+            Intent intent = new Intent(context, StockDetailsActivity.class);
+            intent.putExtra("ticker", storedFavorites.getCompanyTicker());
+            context.startActivity(intent);
         });
     }
 

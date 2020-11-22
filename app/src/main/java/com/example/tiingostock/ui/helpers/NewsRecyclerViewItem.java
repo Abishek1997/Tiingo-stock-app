@@ -38,7 +38,6 @@ public class NewsRecyclerViewItem  extends Item{
     public void bind(@NonNull GroupieViewHolder viewHolder, int position) {
 
         //TODO: Change time of news source to appropriate format
-
         TextView textNewsSource = viewHolder.itemView.findViewById(R.id.text_rv_news_source_value);
         TextView textNewsTitle = viewHolder.itemView.findViewById(R.id.text_rv_news_title);
         TextView textNewsTimeline = viewHolder.itemView.findViewById(R.id.text_rv_timeline_value);
