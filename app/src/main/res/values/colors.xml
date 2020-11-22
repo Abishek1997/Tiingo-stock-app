@@ -14,4 +14,6 @@
     <color name="color_text_fill_highest_opacity">#ffffff</color>
     <color name="card_background_color">#E1E3E5</color>
     <color name="activity_background_color">#F4F2F4</color>
+    <color name="color_negative_change">#ad0314</color>
+    <color name="color_positive_change">#088741</color>
 </resources>

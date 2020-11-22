@@ -1,14 +1,18 @@
 package com.example.tiingostock.ui.homepage;
 
+//TODO: Change app logo, name and implement Splash screen
+
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.BaseColumns;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
@@ -20,15 +24,22 @@ import androidx.cursoradapter.widget.SimpleCursorAdapter;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.tiingostock.R;
 import com.example.tiingostock.network.connectivity.StockDataSourceImpl;
 import com.example.tiingostock.network.pojos.AutocompleteResponseItem;
+import com.example.tiingostock.network.pojos.StoredFavorites;
 import com.example.tiingostock.network.retrofit.TiingoAPIRetrofitService;
 import com.example.tiingostock.repository.StockRepositoryImpl;
+import com.example.tiingostock.ui.helpers.FavoritesRecyclerViewItem;
 import com.example.tiingostock.ui.stockdetails.StockDetailsActivity;
+import com.google.gson.Gson;
+import com.xwray.groupie.GroupAdapter;
+import com.xwray.groupie.Section;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -42,6 +53,12 @@ public class HomePageActivity extends AppCompatActivity{
     private final HomePageActivityViewModelFactory viewModelFactory = new HomePageActivityViewModelFactory(stockRepository);
     private HomePageActivityViewModel viewModel;
     private LiveData<List<AutocompleteResponseItem>> autocompleteDataObserver;
+    private SharedPreferences sharedPreferences;
+    GroupAdapter groupieAdapter = new GroupAdapter();
+    RecyclerView recyclerViewFavorites;
+    Gson gson = new Gson();
+    Section section = new Section();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,7 +68,22 @@ public class HomePageActivity extends AppCompatActivity{
         textFooter = findViewById(R.id.text_footer);
         viewModel = new ViewModelProvider(this, viewModelFactory)
                 .get(HomePageActivityViewModel.class);
+        sharedPreferences = HomePageActivity.this.getSharedPreferences(("favorites"), Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
         bindUI();
+
+        recyclerViewFavorites = findViewById(R.id.recyclerview_favorites);
+        recyclerViewFavorites.setAdapter(groupieAdapter);
+
+        List<FavoritesRecyclerViewItem> favoritesRecyclerViewItems = new ArrayList<>();
+        sharedPreferences.getAll().forEach((item, value) -> {
+            favoritesRecyclerViewItems.add(new FavoritesRecyclerViewItem(gson.fromJson((String) value, StoredFavorites.class), this));
+        });
+        editor.apply();
+        Log.d("data", String.valueOf(favoritesRecyclerViewItems.size()));
+
+        section.addAll(favoritesRecyclerViewItems);
+        groupieAdapter.add(section);
     }
 
     public void bindUI(){
@@ -62,6 +94,12 @@ public class HomePageActivity extends AppCompatActivity{
             startActivity(browserIntent);
         });
         setDate();
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        this.recreate();
     }
 
     public void setDate(){

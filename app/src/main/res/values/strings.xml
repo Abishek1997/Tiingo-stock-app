@@ -28,4 +28,6 @@
     <string name="news">News</string>
     <string name="chrome_icon">chrome_icon</string>
     <string name="twitter_icon">twitter icon</string>
+    <string name="trend_icon">trend icon</string>
+    <string name="forward_arrow">Forward arrow</string>
 </resources>

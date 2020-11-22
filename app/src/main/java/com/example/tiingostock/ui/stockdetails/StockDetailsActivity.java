@@ -1,13 +1,16 @@
 package com.example.tiingostock.ui.stockdetails;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -25,10 +28,12 @@ import com.example.tiingostock.network.connectivity.StockDataSourceImpl;
 import com.example.tiingostock.network.pojos.CompanyDetailsResponse;
 import com.example.tiingostock.network.pojos.CompanyNewsResponse;
 import com.example.tiingostock.network.pojos.CompanyStockDetailsResponse;
+import com.example.tiingostock.network.pojos.StoredFavorites;
 import com.example.tiingostock.network.retrofit.TiingoAPIRetrofitService;
 import com.example.tiingostock.repository.StockRepositoryImpl;
 import com.example.tiingostock.ui.helpers.DialogBox;
 import com.example.tiingostock.ui.helpers.NewsRecyclerViewItem;
+import com.google.gson.Gson;
 import com.xwray.groupie.GroupAdapter;
 import com.xwray.groupie.Section;
 
@@ -36,7 +41,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("MalformedFormatString")
+
+//TODO: Implement portfolio, market open/close strategies
+
+@SuppressWarnings({"MalformedFormatString", "rawtypes"})
 public class StockDetailsActivity extends AppCompatActivity {
 
     private final TiingoAPIRetrofitService tiingoAPIRetrofitService = new TiingoAPIRetrofitService();
@@ -45,6 +53,9 @@ public class StockDetailsActivity extends AppCompatActivity {
     private final StockDetailsActivityViewModelFactory viewModelFactory = new StockDetailsActivityViewModelFactory(stockRepository);
     private StockDetailsActivityViewModel viewModel;
     private String ticker = "";
+    private SharedPreferences sharedPreferences;
+    ImageView imageBookmark;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,13 +63,25 @@ public class StockDetailsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_stock_details);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        sharedPreferences = StockDetailsActivity.this.getSharedPreferences(("favorites"), Context.MODE_PRIVATE);
+
+        TextView toolbarTitle = findViewById(R.id.toolbar_title);
+        TextView textPortfolio = findViewById(R.id.text_portfolio_title);
+
         viewModel = new ViewModelProvider(this, viewModelFactory)
                 .get(StockDetailsActivityViewModel.class);
         ticker = Objects.requireNonNull(getIntent().getExtras()).getString("ticker");
-        TextView toolbarTitle = findViewById(R.id.toolbar_title);
         toolbarTitle.setTypeface(null, Typeface.BOLD);
-        TextView textPortfolio = findViewById(R.id.text_portfolio_title);
         textPortfolio.setTypeface(null, Typeface.BOLD);
+
+        imageBookmark = findViewById(R.id.image_bookmark);
+
+        if (sharedPreferences.contains(ticker)){
+            imageBookmark.setImageResource(R.drawable.ic_baseline_star_24);
+        } else{
+            imageBookmark.setImageResource(R.drawable.ic_baseline_star_border_24);
+        }
         bindUI();
     }
 
@@ -67,6 +90,7 @@ public class StockDetailsActivity extends AppCompatActivity {
         LiveData<CompanyDetailsResponse> companyDetailsObserver = viewModel.getCompanyDetails(ticker);
         LiveData<CompanyStockDetailsResponse> companyStockDetailsObserver = viewModel.getCompanyStockDetails(ticker);
         LiveData<List<CompanyNewsResponse>> companyNewsDetailsObserver = viewModel.getCompanyNewsDetails(ticker);
+        StoredFavorites favorites = new StoredFavorites();
 
         Group groupLoading = findViewById(R.id.group_loading);
         Group groupReady = findViewById(R.id.group_ready);
@@ -79,7 +103,11 @@ public class StockDetailsActivity extends AppCompatActivity {
             groupReady.setVisibility(View.VISIBLE);
             setCompanyDetailsUI(Objects.requireNonNull(data).getTicker(), data.getName());
             setCompanyAboutUI(data.getDescription());
+
+            favorites.setCompanyName(data.getName());
+            favorites.setCompanyTicker(data.getTicker());
         };
+
 
         @SuppressLint("DefaultLocale") Observer<CompanyStockDetailsResponse> companyStockDataObserverCallback = data ->{
             if (data == null){
@@ -89,7 +117,7 @@ public class StockDetailsActivity extends AppCompatActivity {
             }
             groupLoading.setVisibility(View.GONE);
             groupReady.setVisibility(View.VISIBLE);
-            setCompanyStockUI(Objects.requireNonNull(data).getLastPrice().getTngoLast());
+            setCompanyStockUI(Objects.requireNonNull(data).getLastPrice().getTngoLast(), data.getLastPrice().getLast() - data.getLastPrice().getPrevClose());
             setCompanyPortfolioUI();
             setCompanyStatsUI(
                     String.format(" %.2f", data.getLastPrice().getTngoLast()), String.format(" %.2f", data.getLastPrice().getLow()),
@@ -98,6 +126,8 @@ public class StockDetailsActivity extends AppCompatActivity {
                     data.getLastPrice().getMid() == null ? " null": String.format(" %.2f", data.getLastPrice().getMid()),
                     String.format(" %.2f", data.getLastPrice().getHigh()), " " + data.getLastPrice().getVolume().toString()
             );
+            favorites.setCompanyStockValue(data.getLastPrice().getLast());
+            favorites.setCompanyStockValueChange(data.getLastPrice().getLast() - data.getLastPrice().getPrevClose());
         };
 
         Observer<List<CompanyNewsResponse>> companyNewsDataObserverCallback = data -> {
@@ -108,19 +138,45 @@ public class StockDetailsActivity extends AppCompatActivity {
             }
             groupLoading.setVisibility(View.GONE);
             groupReady.setVisibility(View.VISIBLE);
-            setCompanyNewsUI(
-                data.get(0).getUrlToImage(),
-                data.get(0).getSource().getName(),
-                data.get(0).getPublishedAt(),
-                data.get(0).getTitle(),
-                data.get(0).getUrl()
-            );
-            setCompanyNewsRecyclerUI(constructNewsRecyclerViewItems(data.subList(1, data.size())));
+            if (data.size() > 0) {
+                setCompanyNewsUI(
+                        data.get(0).getUrlToImage(),
+                        data.get(0).getSource().getName(),
+                        data.get(0).getPublishedAt(),
+                        data.get(0).getTitle(),
+                        data.get(0).getUrl()
+                );
+            }
+            if (data.size() >= 1){
+                setCompanyNewsRecyclerUI(constructNewsRecyclerViewItems(data.subList(1, data.size())));
+            }
+
         };
 
         companyDetailsObserver.observe(this, companyObserverCallback);
         companyStockDetailsObserver.observe(this, companyStockDataObserverCallback);
         companyNewsDetailsObserver.observe(this, companyNewsDataObserverCallback);
+
+        final Boolean[] isSet = {sharedPreferences.contains(ticker)};
+
+        imageBookmark.setOnClickListener(v -> {
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            Gson gson = new Gson();
+
+            if (isSet[0]){
+                imageBookmark.setImageResource(R.drawable.ic_baseline_star_border_24);
+                isSet[0] = false;
+                editor.remove(ticker);
+                Toast.makeText(this, ticker + " has been removed from Favorites", Toast.LENGTH_SHORT).show();
+
+            } else{
+                imageBookmark.setImageResource(R.drawable.ic_baseline_star_24);
+                isSet[0] = true;
+                editor.putString(ticker, gson.toJson(favorites));
+                Toast.makeText(this, ticker + " has been added to Favorites", Toast.LENGTH_SHORT).show();
+            }
+            editor.apply();
+        });
     }
 
     public void setCompanyDetailsUI(String ticker, String name){
@@ -133,13 +189,21 @@ public class StockDetailsActivity extends AppCompatActivity {
         textCompanyName.setTypeface(null, Typeface.BOLD);
     }
 
-    public void setCompanyStockUI(Double price){
+    @SuppressLint("DefaultLocale")
+    public void setCompanyStockUI(Double price, Double priceDiff){
         TextView textStockValue = findViewById(R.id.text_stock_value);
-        @SuppressLint("DefaultLocale") String stockValue = String.format("%.2f", price);
+        TextView textStockValueChange = findViewById(R.id.text_stock_value_change);
+
+        String stockValue = String.format("%.2f", price);
+
         textStockValue.setText(stockValue);
         textStockValue.setTypeface(null, Typeface.BOLD);
-
-        //TODO: Set gain or loss correspondingly
+        textStockValueChange.setText(String.format("%.2f $", priceDiff));
+        if (priceDiff < 0){
+            textStockValueChange.setTextColor(getColor(R.color.color_negative_change));
+        } else{
+            textStockValueChange.setTextColor(getColor(R.color.color_positive_change));
+        }
     }
 
     public void setCompanyPortfolioUI(){
@@ -215,7 +279,7 @@ public class StockDetailsActivity extends AppCompatActivity {
                 .collect(Collectors.toList());
     }
 
-    public void setCompanyNewsRecyclerUI(List<NewsRecyclerViewItem> items){
+    public void setCompanyNewsRecyclerUI(List<NewsRecyclerViewItem> items) {
         GroupAdapter groupieAdapter = new GroupAdapter();
         RecyclerView recyclerViewNews = findViewById(R.id.recyclerView_news);
         recyclerViewNews.setAdapter(groupieAdapter);
@@ -223,6 +287,5 @@ public class StockDetailsActivity extends AppCompatActivity {
         Section section = new Section();
         section.addAll(items);
         groupieAdapter.add(section);
-
     }
 }
