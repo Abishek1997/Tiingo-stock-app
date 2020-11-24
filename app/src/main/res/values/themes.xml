@@ -1,20 +1,4 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-<!--    &lt;!&ndash; Base application theme. &ndash;&gt;-->
-<!--    <style name="Theme.TiingoStock" parent="Theme.MaterialComponents.DayNight.DarkActionBar">-->
-<!--        &lt;!&ndash; Primary brand color. &ndash;&gt;-->
-<!--        <item name="colorPrimary">@color/purple_500</item>-->
-<!--        <item name="colorPrimaryVariant">@color/purple_700</item>-->
-<!--        <item name="android:textColorPrimary">@color/toolbar_title_color</item>-->
-<!--        <item name="colorOnPrimary">@color/white</item>-->
-<!--        &lt;!&ndash; Secondary brand color. &ndash;&gt;-->
-<!--        <item name="colorSecondary">@color/teal_200</item>-->
-<!--        <item name="colorSecondaryVariant">@color/teal_700</item>-->
-<!--        <item name="colorOnSecondary">@color/black</item>-->
-<!--        &lt;!&ndash; Status bar color. &ndash;&gt;-->
-<!--        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>-->
-<!--        &lt;!&ndash; Customize your theme here. &ndash;&gt;-->
-<!--    </style>-->
-
+<resources>
     <style name="ToolbarTheme">
         <item name="android:background">@color/activity_background_color</item>
         <item name="android:textColorPrimary">@color/toolbar_title_color</item>
@@ -28,6 +12,10 @@
 
     <style name="ActivityTheme" parent="Theme.AppCompat.DayNight">
         <item name="backgroundActivityColor">@color/activity_background_color</item>
+    </style>
+
+    <style name="splashScreenTheme" parent="@android:style/Theme.DeviceDefault.Light.NoActionBar">
+        <item name="android:windowBackground">@drawable/background_splash</item>
     </style>
 
 </resources>

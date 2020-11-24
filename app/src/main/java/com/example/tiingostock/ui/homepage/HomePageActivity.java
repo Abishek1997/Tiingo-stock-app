@@ -1,7 +1,5 @@
 package com.example.tiingostock.ui.homepage;
 
-//TODO: Change app logo, name and implement Splash screen
-
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
@@ -70,6 +68,7 @@ public class HomePageActivity extends AppCompatActivity{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTheme(R.style.ActivityTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_page);
         Toolbar toolbar = findViewById(R.id.toolbar);

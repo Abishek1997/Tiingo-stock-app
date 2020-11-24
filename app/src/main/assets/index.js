@@ -1,4 +1,4 @@
-function init (input) {
+function init (input, ticker) {
 
   // split the data set into ohlc and volume
   var data = JSON.parse(input)
@@ -81,7 +81,7 @@ function init (input) {
 
     series: [{
       type: 'candlestick',
-      name: 'AAPL',
+      name: ticker,
       id: 'aapl',
       zIndex: 2,
       data: ohlc

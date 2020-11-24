@@ -51,6 +51,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 
@@ -175,7 +176,7 @@ public class StockDetailsActivity extends AppCompatActivity {
             }
             groupLoading.setVisibility(View.GONE);
             groupReady.setVisibility(View.VISIBLE);
-            setCompanyChartsUI(data);
+            setCompanyChartsUI(data, ticker);
         };
 
         companyDetailsObserver.observe(this, companyObserverCallback);
@@ -232,7 +233,7 @@ public class StockDetailsActivity extends AppCompatActivity {
     }
 
     @SuppressLint("SetJavaScriptEnabled")
-    public void setCompanyChartsUI(List<CompanyStockHistoryResponse> items){
+    public void setCompanyChartsUI(List<CompanyStockHistoryResponse> items, String ticker){
         WebView webView = findViewById(R.id.webView_charts);
 
         JSONArray jsonArray = new JSONArray();
@@ -270,7 +271,7 @@ public class StockDetailsActivity extends AppCompatActivity {
         webView.getSettings().setUseWideViewPort(true);
         webView.setWebViewClient(new WebViewClient(){
             public void onPageFinished(WebView view, String url){
-                webView.loadUrl("javascript:init('" + jsonArray + "')");
+                webView.loadUrl("javascript:init('" + jsonArray +"', '" + ticker + "')");
             }
         });
 
@@ -316,7 +317,6 @@ public class StockDetailsActivity extends AppCompatActivity {
     }
 
     public void setCompanyNewsUI(String imageURL, String source, String dateTime, String title, String url){
-        //TODO: Change time of news source to appropriate format
 
         ImageView firstNewsImage = findViewById(R.id.image_first_news_card);
         TextView textNewsSource = findViewById(R.id.text_rv_news_source_value);
@@ -330,7 +330,7 @@ public class StockDetailsActivity extends AppCompatActivity {
                 .error(R.mipmap.ic_launcher_round);
         Glide.with(this).load(imageURL).apply(requestOptions).into(firstNewsImage);
         textNewsSource.setText(source);
-        textNewsTime.setText(dateTime);
+        textNewsTime.setText(formatDateTime(dateTime));
         textNewsTitle.setText(title);
         cardStockNews.setOnClickListener(v -> {
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
@@ -343,10 +343,35 @@ public class StockDetailsActivity extends AppCompatActivity {
         });
     }
 
+    public String formatDateTime(String pastTime){
+        String time;
+        long now = new Date().getTime();
+
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        Date date = null;
+        try {
+            date = sdf.parse(pastTime);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        assert date != null;
+        if (TimeUnit.MILLISECONDS.toDays(now - date.getTime()) == 0){
+            if (TimeUnit.MILLISECONDS.toHours(now - date.getTime()) == 0){
+                time = TimeUnit.MILLISECONDS.toMinutes(now - date.getTime()) + " minutes ago";
+            } else{
+                time = TimeUnit.MILLISECONDS.toHours(date.getTime() - now) + " hours ago";
+            }
+        } else{
+            time = TimeUnit.MILLISECONDS.toDays(now - date.getTime()) + " days ago";
+        }
+        return time;
+    }
+
     public List<NewsRecyclerViewItem> constructNewsRecyclerViewItems(List<CompanyNewsResponse> newsList){
         return newsList
                 .stream()
-                .map(item -> new NewsRecyclerViewItem(item.getUrlToImage(), item.getSource().getName(), item.getPublishedAt(), item.getTitle(), StockDetailsActivity.this, item.getUrl()))
+                .map(item -> new NewsRecyclerViewItem(item.getUrlToImage(), item.getSource().getName(), formatDateTime(item.getPublishedAt()), item.getTitle(), StockDetailsActivity.this, item.getUrl()))
                 .collect(Collectors.toList());
     }
 

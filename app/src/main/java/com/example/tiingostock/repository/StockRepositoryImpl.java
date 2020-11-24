@@ -13,6 +13,9 @@ import com.example.tiingostock.network.pojos.CompanyStockHistoryResponse;
 
 import java.util.List;
 
+
+//TODO:Finally change methods to make API call once every 15 seconds
+
 public class StockRepositoryImpl implements StockRepository {
     final Context context;
     private final StockDataSourceImpl stockDataSource;
