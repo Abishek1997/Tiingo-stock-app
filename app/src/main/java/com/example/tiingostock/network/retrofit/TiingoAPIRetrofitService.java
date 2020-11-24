@@ -5,6 +5,7 @@ import com.example.tiingostock.network.pojos.AutocompleteResponseItem;
 import com.example.tiingostock.network.pojos.CompanyDetailsResponse;
 import com.example.tiingostock.network.pojos.CompanyNewsResponse;
 import com.example.tiingostock.network.pojos.CompanyStockDetailsResponse;
+import com.example.tiingostock.network.pojos.CompanyStockHistoryResponse;
 
 import java.util.List;
 
@@ -40,6 +41,9 @@ public class TiingoAPIRetrofitService {
 
         @GET("getCompanyNews")
         Call<List<CompanyNewsResponse>> getCompanyNewsDetailsAsync( @Query("ticker") String ticker);
+
+        @GET("getCompanyHistoryStockPrices")
+        Call<List<CompanyStockHistoryResponse>> getCompanyStockHistoryDetailsAsync( @Query("ticker") String ticker);
     }
 
     public static TiingoAPIRetrofitService getInstance(){

@@ -9,6 +9,7 @@ import com.example.tiingostock.network.pojos.AutocompleteResponseItem;
 import com.example.tiingostock.network.pojos.CompanyDetailsResponse;
 import com.example.tiingostock.network.pojos.CompanyNewsResponse;
 import com.example.tiingostock.network.pojos.CompanyStockDetailsResponse;
+import com.example.tiingostock.network.pojos.CompanyStockHistoryResponse;
 
 import java.util.List;
 
@@ -44,5 +45,11 @@ public class StockRepositoryImpl implements StockRepository {
     public LiveData<List<CompanyNewsResponse>> getCompanyNewsDetails(String ticker) {
         this.stockDataSource.fetchCompanyNewsDetails(ticker);
         return this.stockDataSource.getCompanyNewsDetailsData();
+    }
+
+    @Override
+    public LiveData<List<CompanyStockHistoryResponse>> getCompanyStockHistoryDetails(String ticker) {
+        this.stockDataSource.fetchCompanyStockHistoryDetails(ticker);
+        return this.stockDataSource.getCompanyStockHistoryData();
     }
 }

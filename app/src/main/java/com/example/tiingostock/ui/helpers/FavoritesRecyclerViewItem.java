@@ -37,7 +37,7 @@ public class FavoritesRecyclerViewItem extends Item {
         textCompanyTicker.setText(this.storedFavorites.getCompanyTicker());
         textCompanyName.setText(this.storedFavorites.getCompanyName());
         textCompanyStockValue.setText(String.format("%.2f", this.storedFavorites.getCompanyStockValue()));
-        textCompanyStockValueChange.setText(String.format("%.2f", this.storedFavorites.getCompanyStockValueChange()));
+        textCompanyStockValueChange.setText(String.format("%.2f $", this.storedFavorites.getCompanyStockValueChange()));
 
         if (this.storedFavorites.getCompanyStockValueChange() < 0){
             textCompanyStockValueChange.setTextColor(context.getColor(R.color.color_negative_change));

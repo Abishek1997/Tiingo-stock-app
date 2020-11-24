@@ -7,6 +7,7 @@ import com.example.tiingostock.network.pojos.AutocompleteResponseItem;
 import com.example.tiingostock.network.pojos.CompanyDetailsResponse;
 import com.example.tiingostock.network.pojos.CompanyNewsResponse;
 import com.example.tiingostock.network.pojos.CompanyStockDetailsResponse;
+import com.example.tiingostock.network.pojos.CompanyStockHistoryResponse;
 import com.example.tiingostock.network.retrofit.TiingoAPIRetrofitService;
 
 import org.jetbrains.annotations.NotNull;
@@ -23,6 +24,7 @@ public class StockDataSourceImpl implements StockDataSource {
     private final MutableLiveData<CompanyDetailsResponse> _downloadedCompanyDetailsData = new MutableLiveData<>();
     private final MutableLiveData<CompanyStockDetailsResponse> _downloadedCompanyStockDetailsData = new MutableLiveData<>();
     private final MutableLiveData<List<CompanyNewsResponse>> _downloadedCompanyNewsDetailsData = new MutableLiveData<>();
+    private final MutableLiveData<List<CompanyStockHistoryResponse>> _downloadedCompanyStockHistoryData = new MutableLiveData<>();
 
     public StockDataSourceImpl(
         TiingoAPIRetrofitService tiingoAPIRetrofitService
@@ -106,6 +108,25 @@ public class StockDataSourceImpl implements StockDataSource {
     }
 
     @Override
+    public void fetchCompanyStockHistoryDetails(String ticker) {
+        TiingoAPIRetrofitService
+                .getInstance()
+                .getRetrofitInterface()
+                .getCompanyStockHistoryDetailsAsync(ticker)
+                .enqueue(new Callback<List<CompanyStockHistoryResponse>>() {
+                    @Override
+                    public void onResponse(@NotNull Call<List<CompanyStockHistoryResponse>> call, @NotNull Response<List<CompanyStockHistoryResponse>> response) {
+                        _downloadedCompanyStockHistoryData.postValue(response.body());
+                    }
+
+                    @Override
+                    public void onFailure(@NotNull Call<List<CompanyStockHistoryResponse>> call, @NotNull Throwable t) {
+                        t.printStackTrace();
+                    }
+                });
+    }
+
+    @Override
     public LiveData<List<AutocompleteResponseItem>> getAutoCompleteData() {
         return _downloadedAutocompleteData;
     }
@@ -123,5 +144,10 @@ public class StockDataSourceImpl implements StockDataSource {
     @Override
     public LiveData<List<CompanyNewsResponse>> getCompanyNewsDetailsData() {
         return _downloadedCompanyNewsDetailsData;
+    }
+
+    @Override
+    public LiveData<List<CompanyStockHistoryResponse>> getCompanyStockHistoryData() {
+        return _downloadedCompanyStockHistoryData;
     }
 }

@@ -7,7 +7,11 @@ import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,6 +32,7 @@ import com.example.tiingostock.network.connectivity.StockDataSourceImpl;
 import com.example.tiingostock.network.pojos.CompanyDetailsResponse;
 import com.example.tiingostock.network.pojos.CompanyNewsResponse;
 import com.example.tiingostock.network.pojos.CompanyStockDetailsResponse;
+import com.example.tiingostock.network.pojos.CompanyStockHistoryResponse;
 import com.example.tiingostock.network.pojos.StoredFavorites;
 import com.example.tiingostock.network.retrofit.TiingoAPIRetrofitService;
 import com.example.tiingostock.repository.StockRepositoryImpl;
@@ -37,6 +42,13 @@ import com.google.gson.Gson;
 import com.xwray.groupie.GroupAdapter;
 import com.xwray.groupie.Section;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -90,6 +102,8 @@ public class StockDetailsActivity extends AppCompatActivity {
         LiveData<CompanyDetailsResponse> companyDetailsObserver = viewModel.getCompanyDetails(ticker);
         LiveData<CompanyStockDetailsResponse> companyStockDetailsObserver = viewModel.getCompanyStockDetails(ticker);
         LiveData<List<CompanyNewsResponse>> companyNewsDetailsObserver = viewModel.getCompanyNewsDetails(ticker);
+        LiveData<List<CompanyStockHistoryResponse>> companyStockHistoryDetailsObserver = viewModel.getCompanyStockHistoryDetails(ticker);
+
         StoredFavorites favorites = new StoredFavorites();
 
         Group groupLoading = findViewById(R.id.group_loading);
@@ -153,10 +167,21 @@ public class StockDetailsActivity extends AppCompatActivity {
 
         };
 
+        Observer<List<CompanyStockHistoryResponse>> companyStockHistoryObserverCallback = data -> {
+            if (data == null){
+                groupLoading.setVisibility(View.VISIBLE);
+                groupReady.setVisibility(View.GONE);
+                return;
+            }
+            groupLoading.setVisibility(View.GONE);
+            groupReady.setVisibility(View.VISIBLE);
+            setCompanyChartsUI(data);
+        };
+
         companyDetailsObserver.observe(this, companyObserverCallback);
         companyStockDetailsObserver.observe(this, companyStockDataObserverCallback);
         companyNewsDetailsObserver.observe(this, companyNewsDataObserverCallback);
-
+        companyStockHistoryDetailsObserver.observe(this, companyStockHistoryObserverCallback);
         final Boolean[] isSet = {sharedPreferences.contains(ticker)};
 
         imageBookmark.setOnClickListener(v -> {
@@ -204,6 +229,52 @@ public class StockDetailsActivity extends AppCompatActivity {
         } else{
             textStockValueChange.setTextColor(getColor(R.color.color_positive_change));
         }
+    }
+
+    @SuppressLint("SetJavaScriptEnabled")
+    public void setCompanyChartsUI(List<CompanyStockHistoryResponse> items){
+        WebView webView = findViewById(R.id.webView_charts);
+
+        JSONArray jsonArray = new JSONArray();
+        items.forEach(item -> {
+            JSONObject jsonObject = new JSONObject();
+            @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+            Date date = null;
+            try {
+                date = sdf.parse(item.getDate());
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            long epoch = date.getTime();
+            try {
+                jsonObject.put("date", epoch);
+                jsonObject.put("open", item.getOpen());
+                jsonObject.put("close", item.getClose());
+                jsonObject.put("high", item.getHigh());
+                jsonObject.put("low", item.getLow());
+                jsonObject.put("volume", item.getVolume());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            jsonArray.put(jsonObject);
+        });
+
+
+        Log.d("data", String.valueOf(jsonArray.length()));
+
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
+        webView.getSettings().setBuiltInZoomControls(false);
+        webView.getSettings().setLoadWithOverviewMode(true);
+        webView.getSettings().setLoadsImagesAutomatically(true);
+        webView.getSettings().setUseWideViewPort(true);
+        webView.setWebViewClient(new WebViewClient(){
+            public void onPageFinished(WebView view, String url){
+                webView.loadUrl("javascript:init('" + jsonArray + "')");
+            }
+        });
+
+        webView.loadUrl("file:///android_asset/index.html");
     }
 
     public void setCompanyPortfolioUI(){
