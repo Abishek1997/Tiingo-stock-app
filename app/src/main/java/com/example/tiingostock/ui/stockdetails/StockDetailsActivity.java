@@ -9,9 +9,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,6 +38,7 @@ import com.example.tiingostock.network.retrofit.TiingoAPIRetrofitService;
 import com.example.tiingostock.repository.StockRepositoryImpl;
 import com.example.tiingostock.ui.helpers.DialogBox;
 import com.example.tiingostock.ui.helpers.NewsRecyclerViewItem;
+import com.example.tiingostock.ui.helpers.TradeDialogBox;
 import com.google.gson.Gson;
 import com.xwray.groupie.GroupAdapter;
 import com.xwray.groupie.Section;
@@ -133,7 +134,6 @@ public class StockDetailsActivity extends AppCompatActivity {
             groupLoading.setVisibility(View.GONE);
             groupReady.setVisibility(View.VISIBLE);
             setCompanyStockUI(Objects.requireNonNull(data).getLastPrice().getTngoLast(), data.getLastPrice().getLast() - data.getLastPrice().getPrevClose());
-            setCompanyPortfolioUI();
             setCompanyStatsUI(
                     String.format(" %.2f", data.getLastPrice().getTngoLast()), String.format(" %.2f", data.getLastPrice().getLow()),
                     data.getLastPrice().getBidPrice() == null ? " null" : String.format(" %.2f", data.getLastPrice().getBidPrice()),
@@ -141,8 +141,11 @@ public class StockDetailsActivity extends AppCompatActivity {
                     data.getLastPrice().getMid() == null ? " null": String.format(" %.2f", data.getLastPrice().getMid()),
                     String.format(" %.2f", data.getLastPrice().getHigh()), " " + data.getLastPrice().getVolume().toString()
             );
+
+
             favorites.setCompanyStockValue(data.getLastPrice().getLast());
             favorites.setCompanyStockValueChange(data.getLastPrice().getLast() - data.getLastPrice().getPrevClose());
+            setCompanyPortfolioUI();
         };
 
         Observer<List<CompanyNewsResponse>> companyNewsDataObserverCallback = data -> {
@@ -261,10 +264,7 @@ public class StockDetailsActivity extends AppCompatActivity {
         });
 
 
-        Log.d("data", String.valueOf(jsonArray.length()));
-
         webView.getSettings().setJavaScriptEnabled(true);
-        webView.getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
         webView.getSettings().setBuiltInZoomControls(false);
         webView.getSettings().setLoadWithOverviewMode(true);
         webView.getSettings().setLoadsImagesAutomatically(true);
@@ -280,6 +280,16 @@ public class StockDetailsActivity extends AppCompatActivity {
 
     public void setCompanyPortfolioUI(){
 
+        LiveData<CompanyDetailsResponse> companyDetailsObserver = viewModel.getCompanyDetails(ticker);
+        LiveData<CompanyStockDetailsResponse> companyStockDetailsObserver = viewModel.getCompanyStockDetails(ticker);
+
+        Button tradeButton = findViewById(R.id.button_trade);
+        tradeButton.setOnClickListener(v -> {
+            TradeDialogBox tradeDialog = new TradeDialogBox();
+            Log.d("data", Objects.requireNonNull(companyDetailsObserver.getValue()).getName());
+            tradeDialog.showDialog(StockDetailsActivity.this, companyDetailsObserver.getValue().getName(), companyDetailsObserver.getValue().getTicker(),
+            Objects.requireNonNull(companyStockDetailsObserver.getValue()).getLastPrice().getTngoLast());
+        });
     }
 
     public void setCompanyStatsUI(String currentPrice, String low, String bidPrice, String openPrice, String mid, String high, String volume){
