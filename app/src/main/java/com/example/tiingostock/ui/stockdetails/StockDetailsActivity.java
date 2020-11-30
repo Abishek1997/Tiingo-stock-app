@@ -74,6 +74,7 @@ public class StockDetailsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_stock_details);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -179,7 +180,7 @@ public class StockDetailsActivity extends AppCompatActivity {
             }
             groupLoading.setVisibility(View.GONE);
             groupReady.setVisibility(View.VISIBLE);
-            setCompanyChartsUI(data, ticker);
+//            setCompanyChartsUI(data, ticker);
         };
 
         companyDetailsObserver.observe(this, companyObserverCallback);
@@ -265,7 +266,7 @@ public class StockDetailsActivity extends AppCompatActivity {
 
 
         webView.getSettings().setJavaScriptEnabled(true);
-        webView.getSettings().setBuiltInZoomControls(false);
+        webView.getSettings().setBuiltInZoomControls(true);
         webView.getSettings().setLoadWithOverviewMode(true);
         webView.getSettings().setLoadsImagesAutomatically(true);
         webView.getSettings().setUseWideViewPort(true);
