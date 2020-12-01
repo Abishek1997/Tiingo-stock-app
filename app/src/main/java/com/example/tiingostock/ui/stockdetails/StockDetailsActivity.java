@@ -33,6 +33,7 @@ import com.example.tiingostock.network.pojos.CompanyDetailsResponse;
 import com.example.tiingostock.network.pojos.CompanyNewsResponse;
 import com.example.tiingostock.network.pojos.CompanyStockDetailsResponse;
 import com.example.tiingostock.network.pojos.CompanyStockHistoryResponse;
+import com.example.tiingostock.network.pojos.PortfolioValues;
 import com.example.tiingostock.network.pojos.StoredFavorites;
 import com.example.tiingostock.network.retrofit.TiingoAPIRetrofitService;
 import com.example.tiingostock.repository.StockRepositoryImpl;
@@ -68,8 +69,12 @@ public class StockDetailsActivity extends AppCompatActivity {
     private StockDetailsActivityViewModel viewModel;
     private String ticker = "";
     private SharedPreferences sharedPreferences;
+    private SharedPreferences portfolioSharedPreferences;
     ImageView imageBookmark;
-
+    LiveData<CompanyDetailsResponse> companyDetailsObserver;
+    LiveData<CompanyStockDetailsResponse> companyStockDetailsObserver;
+    LiveData<List<CompanyNewsResponse>> companyNewsDetailsObserver;
+    LiveData<List<CompanyStockHistoryResponse>> companyStockHistoryDetailsObserver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +85,7 @@ public class StockDetailsActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         sharedPreferences = StockDetailsActivity.this.getSharedPreferences(("favorites"), Context.MODE_PRIVATE);
+        portfolioSharedPreferences = StockDetailsActivity.this.getSharedPreferences("portfolio_amount", Context.MODE_PRIVATE);
 
         TextView toolbarTitle = findViewById(R.id.toolbar_title);
         TextView textPortfolio = findViewById(R.id.text_portfolio_title);
@@ -102,10 +108,10 @@ public class StockDetailsActivity extends AppCompatActivity {
 
     public void bindUI(){
 
-        LiveData<CompanyDetailsResponse> companyDetailsObserver = viewModel.getCompanyDetails(ticker);
-        LiveData<CompanyStockDetailsResponse> companyStockDetailsObserver = viewModel.getCompanyStockDetails(ticker);
-        LiveData<List<CompanyNewsResponse>> companyNewsDetailsObserver = viewModel.getCompanyNewsDetails(ticker);
-        LiveData<List<CompanyStockHistoryResponse>> companyStockHistoryDetailsObserver = viewModel.getCompanyStockHistoryDetails(ticker);
+        companyDetailsObserver = viewModel.getCompanyDetails(ticker);
+        companyStockDetailsObserver = viewModel.getCompanyStockDetails(ticker);
+        companyNewsDetailsObserver = viewModel.getCompanyNewsDetails(ticker);
+        companyStockHistoryDetailsObserver = viewModel.getCompanyStockHistoryDetails(ticker);
 
         StoredFavorites favorites = new StoredFavorites();
 
@@ -146,7 +152,7 @@ public class StockDetailsActivity extends AppCompatActivity {
 
             favorites.setCompanyStockValue(data.getLastPrice().getLast());
             favorites.setCompanyStockValueChange(data.getLastPrice().getLast() - data.getLastPrice().getPrevClose());
-            setCompanyPortfolioUI();
+            setCompanyPortfolioUI(data.getLastPrice().getTngoLast());
         };
 
         Observer<List<CompanyNewsResponse>> companyNewsDataObserverCallback = data -> {
@@ -180,7 +186,7 @@ public class StockDetailsActivity extends AppCompatActivity {
             }
             groupLoading.setVisibility(View.GONE);
             groupReady.setVisibility(View.VISIBLE);
-//            setCompanyChartsUI(data, ticker);
+            setCompanyChartsUI(data, ticker);
         };
 
         companyDetailsObserver.observe(this, companyObserverCallback);
@@ -266,7 +272,7 @@ public class StockDetailsActivity extends AppCompatActivity {
 
 
         webView.getSettings().setJavaScriptEnabled(true);
-        webView.getSettings().setBuiltInZoomControls(true);
+        webView.getSettings().setBuiltInZoomControls(false);
         webView.getSettings().setLoadWithOverviewMode(true);
         webView.getSettings().setLoadsImagesAutomatically(true);
         webView.getSettings().setUseWideViewPort(true);
@@ -279,18 +285,42 @@ public class StockDetailsActivity extends AppCompatActivity {
         webView.loadUrl("file:///android_asset/index.html");
     }
 
-    public void setCompanyPortfolioUI(){
+    public void setCompanyPortfolioUI(Double stockValue){
 
-        LiveData<CompanyDetailsResponse> companyDetailsObserver = viewModel.getCompanyDetails(ticker);
-        LiveData<CompanyStockDetailsResponse> companyStockDetailsObserver = viewModel.getCompanyStockDetails(ticker);
+        Gson gson = new Gson();
 
         Button tradeButton = findViewById(R.id.button_trade);
+        TextView textSharesOwnedValue = findViewById(R.id.text_shares_owned_value);
+        TextView textMarketValue = findViewById(R.id.text_market_value_value);
+        final String[] shares = new String[1];
+        final String[] marketValue = new String[1];
+
+        if (portfolioSharedPreferences.contains(ticker)){
+            StoredFavorites item = gson.fromJson(portfolioSharedPreferences.getString(ticker, ""), StoredFavorites.class);
+            Log.d("data", item.toString());
+            String textShares = " " + item.getShares().toString();
+            textSharesOwnedValue.setText(textShares);
+
+            @SuppressLint("DefaultLocale") String textValue = " $" + String.format("%.2f", item.getShares() * item.getCompanyStockValue());
+            textMarketValue.setText(textValue);
+        }
+
         tradeButton.setOnClickListener(v -> {
             TradeDialogBox tradeDialog = new TradeDialogBox();
-            Log.d("data", Objects.requireNonNull(companyDetailsObserver.getValue()).getName());
             tradeDialog.showDialog(StockDetailsActivity.this, companyDetailsObserver.getValue().getName(), companyDetailsObserver.getValue().getTicker(),
-            Objects.requireNonNull(companyStockDetailsObserver.getValue()).getLastPrice().getTngoLast());
+            Objects.requireNonNull(companyStockDetailsObserver.getValue()).getLastPrice().getTngoLast(),
+                    companyStockDetailsObserver.getValue().getLastPrice().getLast() - companyStockDetailsObserver.getValue().getLastPrice().getPrevClose(),viewModel);
         });
+
+        @SuppressLint("DefaultLocale") Observer<PortfolioValues> portfolioValuesObserverCallback = data -> {
+            shares[0] = " " + data.getShares().toString();
+            textSharesOwnedValue.setText(shares[0]);
+            marketValue[0] = " $" + String.format("%.2f", data.getAmount());
+            textMarketValue.setText(marketValue[0]);
+        };
+
+        LiveData<PortfolioValues> portfolioValuesLiveDataObserver = viewModel.getPortfolioValues();
+        portfolioValuesLiveDataObserver.observe(this, portfolioValuesObserverCallback);
     }
 
     public void setCompanyStatsUI(String currentPrice, String low, String bidPrice, String openPrice, String mid, String high, String volume){

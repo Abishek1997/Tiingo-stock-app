@@ -18,13 +18,15 @@ public class FavoritesRecyclerViewItem extends Item {
 
     private final StoredFavorites storedFavorites;
     private final Context context;
+    private final int flag;
 
-    public FavoritesRecyclerViewItem(StoredFavorites storedFavorites, Context context){
+    public FavoritesRecyclerViewItem(StoredFavorites storedFavorites, Context context, int flag){
         this.storedFavorites = storedFavorites;
         this.context = context;
+        this.flag = flag;
     }
 
-    @SuppressLint("DefaultLocale")
+    @SuppressLint({"DefaultLocale", "SetTextI18n"})
     @Override
     public void bind(@NonNull GroupieViewHolder viewHolder, int position) {
         TextView textCompanyTicker = viewHolder.itemView.findViewById(R.id.favorites_text_company_ticker);
@@ -35,7 +37,12 @@ public class FavoritesRecyclerViewItem extends Item {
         ImageView imageRight = viewHolder.itemView.findViewById(R.id.favorites_arrow);
 
         textCompanyTicker.setText(this.storedFavorites.getCompanyTicker());
-        textCompanyName.setText(this.storedFavorites.getCompanyName());
+        if (this.flag == 0){
+            textCompanyName.setText(String.format("%.1f", this.storedFavorites.getShares()) + " shares");
+        } else {
+            textCompanyName.setText(this.storedFavorites.getCompanyName());
+        }
+
         textCompanyStockValue.setText(String.format("%.2f", this.storedFavorites.getCompanyStockValue()));
         textCompanyStockValueChange.setText(String.format("%.2f $", this.storedFavorites.getCompanyStockValueChange()));
 

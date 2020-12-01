@@ -33,4 +33,6 @@
     <string name="buy">Buy</string>
     <string name="sell">Sell</string>
     <string name="shares">shares</string>
+    <string name="congratulations">Congratulations!</string>
+    <string name="done">DONE</string>
 </resources>

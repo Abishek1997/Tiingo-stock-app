@@ -9,6 +9,8 @@ public class StoredFavorites {
     private String companyTicker;
     private Double companyStockValue;
     private Double companyStockValueChange;
+    private Double shares;
+
     private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     public String getCompanyName() {
@@ -30,6 +32,10 @@ public class StoredFavorites {
     public Map<String, Object> getAdditionalProperties() {
         return this.additionalProperties;
     }
+
+    public Double getShares() { return shares; }
+
+    public void setShares(Double shares) { this.shares = shares; }
 
     public void setAdditionalProperty(String name, Object value) {
         this.additionalProperties.put(name, value);

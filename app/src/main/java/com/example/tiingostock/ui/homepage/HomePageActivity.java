@@ -59,12 +59,18 @@ public class HomePageActivity extends AppCompatActivity{
     private final HomePageActivityViewModelFactory viewModelFactory = new HomePageActivityViewModelFactory(stockRepository);
     private HomePageActivityViewModel viewModel;
     private LiveData<List<AutocompleteResponseItem>> autocompleteDataObserver;
+    private SharedPreferences sharedPreferences;
     GroupAdapter groupieAdapter = new GroupAdapter();
     RecyclerView recyclerViewFavorites;
     Gson gson = new Gson();
     Section section = new Section();
     SharedPreferences.Editor editor;
     List<FavoritesRecyclerViewItem> favoritesRecyclerViewItems;
+
+    List<FavoritesRecyclerViewItem> portfolioRecyclerViewItems;
+    GroupAdapter groupieAdapterPortfolio = new GroupAdapter();
+    Section portolfioSection = new Section();
+    RecyclerView recyclerViewPortfolio;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,11 +91,45 @@ public class HomePageActivity extends AppCompatActivity{
 
         favoritesRecyclerViewItems = new ArrayList<>();
         sharedPreferences.getAll().forEach((item, value) -> {
-            favoritesRecyclerViewItems.add(new FavoritesRecyclerViewItem(gson.fromJson((String) value, StoredFavorites.class), this));
+            favoritesRecyclerViewItems.add(new FavoritesRecyclerViewItem(gson.fromJson((String) value, StoredFavorites.class), this, 1));
         });
         editor.apply();
         section.addAll(favoritesRecyclerViewItems);
         groupieAdapter.add(section);
+
+        sharedPreferences = HomePageActivity.this.getSharedPreferences(("portfolio_amount"), Context.MODE_PRIVATE);
+        Double availableAmount = 20000.00;
+
+
+        if ( !sharedPreferences.contains("portfolio_amount") ){
+            editor = sharedPreferences.edit();
+            editor.putString("portfolio_amount", availableAmount.toString());
+        } else{
+            availableAmount = Double.valueOf(sharedPreferences.getString("portfolio_amount", ""));
+        }
+
+        final Double[] netWorth = {availableAmount};
+
+        SharedPreferences finalSharedPreferences = sharedPreferences;
+
+        recyclerViewPortfolio = findViewById(R.id.recyclerview_portfolio);
+        recyclerViewPortfolio.setAdapter(groupieAdapterPortfolio);
+        portfolioRecyclerViewItems = new ArrayList<>();
+
+        sharedPreferences.getAll().forEach((item, value ) -> {
+            if (!item.equalsIgnoreCase("portfolio_amount")){
+                Double stockPortfolioShares = gson.fromJson(finalSharedPreferences.getString(item, ""), StoredFavorites.class).getShares();
+                Double stockPortfolioStockValue = gson.fromJson(finalSharedPreferences.getString(item, ""), StoredFavorites.class).getCompanyStockValue();
+                netWorth[0] = netWorth[0] + (stockPortfolioShares * stockPortfolioStockValue);
+                TextView textViewNetWorth = findViewById(R.id.value_networth);
+                textViewNetWorth.setText(netWorth[0].toString());
+                portfolioRecyclerViewItems.add(new FavoritesRecyclerViewItem(gson.fromJson(finalSharedPreferences.getString(item, ""), StoredFavorites.class), this, 0));
+            }
+        });
+        editor.apply();
+        portolfioSection.addAll(portfolioRecyclerViewItems);
+        groupieAdapterPortfolio.add(portolfioSection);
+
         setItemHelperRecyclerView();
     }
 
