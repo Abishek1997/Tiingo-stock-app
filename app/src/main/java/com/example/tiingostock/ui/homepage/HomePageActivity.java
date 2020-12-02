@@ -11,6 +11,7 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.BaseColumns;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
@@ -117,7 +118,8 @@ public class HomePageActivity extends AppCompatActivity{
         portfolioRecyclerViewItems = new ArrayList<>();
 
         sharedPreferences.getAll().forEach((item, value ) -> {
-            if (!item.equalsIgnoreCase("portfolio_amount")){
+            Log.d("data", item + finalSharedPreferences.getString(item, ""));
+            if (!item.equalsIgnoreCase("portfolio_amount") && gson.fromJson(finalSharedPreferences.getString(item, ""), StoredFavorites.class).getShares() > 0.0){
                 Double stockPortfolioShares = gson.fromJson(finalSharedPreferences.getString(item, ""), StoredFavorites.class).getShares();
                 Double stockPortfolioStockValue = gson.fromJson(finalSharedPreferences.getString(item, ""), StoredFavorites.class).getCompanyStockValue();
                 netWorth[0] = netWorth[0] + (stockPortfolioShares * stockPortfolioStockValue);
@@ -126,6 +128,7 @@ public class HomePageActivity extends AppCompatActivity{
                 portfolioRecyclerViewItems.add(new FavoritesRecyclerViewItem(gson.fromJson(finalSharedPreferences.getString(item, ""), StoredFavorites.class), this, 0));
             }
         });
+
         editor.apply();
         portolfioSection.addAll(portfolioRecyclerViewItems);
         groupieAdapterPortfolio.add(portolfioSection);

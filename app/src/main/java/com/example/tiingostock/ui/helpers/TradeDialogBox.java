@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.graphics.drawable.ColorDrawable;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
@@ -121,23 +122,21 @@ public class TradeDialogBox {
                 if (currentShares[0] > availableShares){
                     Toast.makeText(activity, "Not enough shares to sell", Toast.LENGTH_SHORT).show();
                 } else{
-                    editor[0] = sharedPreferences.edit();
                     double remainingShares = availableShares - currentShares[0];
-                    if (remainingShares == 0) {
-                        editor[0].remove(companyTicker);
-                        editor[0].apply();
-                    } else{
-                        portfolioItem.setCompanyTicker(companyTicker);
-                        portfolioItem.setCompanyName(companyName);
-                        portfolioItem.setCompanyStockValue(stockValue);
-                        portfolioItem.setCompanyStockValueChange(stockValueChange);
-                        portfolioItem.setShares(remainingShares);
-                    }
+                    editor[0] = sharedPreferences.edit();
+
+                    portfolioItem.setCompanyTicker(companyTicker);
+                    portfolioItem.setCompanyName(companyName);
+                    portfolioItem.setCompanyStockValue(stockValue);
+                    portfolioItem.setCompanyStockValueChange(stockValueChange);
+                    portfolioItem.setShares(remainingShares);
+
                     availableAmount[0] = availableAmount[0] + currentAmount[0];
                     editor[0].putString("portfolio_amount", String.valueOf(availableAmount[0]));
                     editor[0].putString(companyTicker, gson.toJson(portfolioItem));
                     editor[0].apply();
 
+                    Log.d("data", sharedPreferences.getAll().toString());
                     successDialogBox.showDialog(activity, companyTicker, String.valueOf(currentShares[0]), 1);
                     stockDetailsActivityViewModel.setPortfolioValues(remainingShares * stockValue, remainingShares);
                     dialog.dismiss();
