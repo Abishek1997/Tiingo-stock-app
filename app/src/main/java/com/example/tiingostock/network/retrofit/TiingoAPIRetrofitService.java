@@ -19,7 +19,7 @@ import retrofit2.http.Query;
 //http://10.0.2.2:8081/autocomplete?ticker=ama
 public class TiingoAPIRetrofitService {
     private static TiingoAPIRetrofitService client;
-    private static final String BASE_URL = "http://10.0.2.2:8081/";
+    private static final String BASE_URL = "http://smt-node-for-andr.us-east-1.elasticbeanstalk.com/";
     private final Retrofit retrofit;
 
     public TiingoAPIRetrofitService(){
